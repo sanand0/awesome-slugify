@@ -263,7 +263,7 @@ class UniqueTestCase(unittest.TestCase):
         slugify = UniqueSlugify(uids=['This-is-my-test', 'This-is-another-test'])
         self.assertEqual(slugify('This % is a test ---'), 'This-is-a-test')
         self.assertEqual(slugify('This % is my test ---'), 'This-is-my-test-1')
-        self.assertTrue(isinstance(slugify.uids, set))
+        self.assertTrue(isinstance(slugify.uids, dict))
 
         slugify = UniqueSlugify(uids=set(["let-me-not", "to-the-marriage", "of-true-minds"]))
         self.assertEqual(slugify("of-true-minds"), "of-true-minds-1")
@@ -289,6 +289,13 @@ class UniqueTestCase(unittest.TestCase):
         self.assertEqual(slugify('te occidere possunt'), 'te-occidere-possunt-1')
         self.assertEqual(slugify('boo'), 'boo-1')
         self.assertEqual(slugify('boo'), 'boo-2')
+
+    def test_unslug(self):
+        slugify = UniqueSlugify()
+        self.assertEqual(slugify('This % is a test ---'), 'This-is-a-test')
+        self.assertEqual(slugify.unslug('This-is-a-test'), 'This % is a test ---')
+        self.assertEqual(slugify('This ! is a test ---'), 'This-is-a-test-1')
+        self.assertEqual(slugify.unslug('This-is-a-test-1'), 'This ! is a test ---')
 
 
 class DeprecationTestCase(unittest.TestCase):

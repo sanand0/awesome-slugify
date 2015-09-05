@@ -202,9 +202,9 @@ class UniqueSlugify(Slugify):
 
     def __init__(self, *args, **kwargs):
         # don't declare uids in args to avoid problem if someone uses positional arguments on initialization
-        self.uids = kwargs.pop('uids', set())
-        if isinstance(self.uids, list):
-            self.uids = set(self.uids)
+        self.uids = kwargs.pop('uids', {})
+        if isinstance(self.uids, list) or isinstance(self.uids, set):
+            self.uids = {uid: None for uid in self.uids}
         self.unique_check = kwargs.pop(
             "unique_check",
             lambda text, uids: self.default_unique_check(text, uids)
@@ -212,6 +212,7 @@ class UniqueSlugify(Slugify):
         super(UniqueSlugify, self).__init__(*args, **kwargs)
 
     def __call__(self, text, **kwargs):
+        original_text = text
         # get slugified text
         text = super(UniqueSlugify, self).__call__(text, **kwargs)
         count = 0
@@ -220,11 +221,14 @@ class UniqueSlugify(Slugify):
         while not self.unique_check(newtext, self.uids):
             count += 1
             newtext = "%s%s%d" % (text, separator, count)
-        self.uids.add(newtext)
+        self.uids[newtext] = original_text
         return newtext
 
     def default_unique_check(self, text, uids):
         return text not in uids
+
+    def unslug(self, newtext):
+        return self.uids[newtext]
 
 # \p{SB=AT} = '.․﹒．'
 # \p{SB=ST} = '!?՜՞։؟۔܀܁܂߹।॥၊။።፧፨᙮᜵᜶‼‽⁇⁈⁉⸮。꓿꘎꘏꤯﹖﹗！？｡'
